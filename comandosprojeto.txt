@@ -1,0 +1,9 @@
+mkdir ProjQuimico
+cd ProjQuimico
+code .
+npm init
+npm install express --save
+
+<opcional>
+npm install nodemon --save-dev
+-- para as alterações feitas nos arquivos impactarem no processo atual sem precisar reinicia-lo
