@@ -18,48 +18,48 @@ app.listen(port, function () {
 
 app.get('/elementosws/:Id', (req, res) => {
   if (req.params.Id == 0) {
-    con.exeqSQLQuery("select id,nome,simbolo,numero,estado,descricao from elementoquimico", null, res,true);
+    con.exeqSQLQuery("select id,nome,simbolo,numero,estado,descricao from elementoquimico", null, res, true);
   }
   else {
-    con.exeqSQLQuery("select id,nome,simbolo,numero,estado,descricao from elementoquimico where id = ?", req.params.Id, res,true);
+    con.exeqSQLQuery("select id,nome,simbolo,numero,estado,descricao from elementoquimico where id = ?", req.params.Id, res, true);
   }
 })
 
-app.get('/formulaws/:Id',(req,res) =>{
+app.get('/formulaws/:Id', (req, res) => {
   if (req.params.Id == 0) {
-    con.exeqSQLQuery("select eq.nome,eq.simbolo,fq.quantidade,fq.id from formulaquimica fq inner join elementoquimico eq on fq.idelemento = eq.id",null,res,true)
-  }else{
-    con.exeqSQLQuery("select eq.nome,eq.simbolo,fq.quantidade,fq.id from formulaquimica fq inner join elementoquimico eq on fq.idelemento = eq.id where fq.idcomposto = ?", req.params.Id,res,true)
+    con.exeqSQLQuery("select eq.nome,eq.simbolo,fq.quantidade,fq.id,fq.idelemento from formulaquimica fq inner join elementoquimico eq on fq.idelemento = eq.id", null, res, true)
+  } else {
+    con.exeqSQLQuery("select eq.nome,eq.simbolo,fq.quantidade,fq.id,fq.idelemento from formulaquimica fq inner join elementoquimico eq on fq.idelemento = eq.id where fq.idcomposto = ?", req.params.Id, res, true)
   }
 })
 
-app.get('/compostows/:Id',(req,res) =>{
+app.get('/compostows/:Id', (req, res) => {
   if (req.params.Id == 0) {
-    con.exeqSQLQuery("select id,nome from compostoquimico",null,res,true)
-  }else{
-    con.exeqSQLQuery("select id,nome from compostoquimico where id = ?", req.params.Id,res,true)
+    con.exeqSQLQuery("select id,nome from compostoquimico", null, res, true)
+  } else {
+    con.exeqSQLQuery("select id,nome from compostoquimico where id = ?", req.params.Id, res, true)
   }
 })
 
 app.post('/cadelementows', (req, res) => {
   if (req.body.Id > 0) {
-    params = [req.body.Nome, req.body.Simbolo, req.body.Numero, req.body.Estado,req.body.Descricao, req.body.Id]
+    params = [req.body.Nome, req.body.Simbolo, req.body.Numero, req.body.Estado, req.body.Descricao, req.body.Id]
     console.log(params)
-    con.exeqSQLQuery("update elementoquimico set nome = ?, simbolo = ?,numero= ?,estado = ?,descricao = ? where id = ?", params, res,false);
+    con.exeqSQLQuery("update elementoquimico set nome = ?, simbolo = ?,numero= ?,estado = ?,descricao = ? where id = ?", params, res, false);
   } else {
-    params = [req.body.Nome, req.body.Simbolo, req.body.Numero, req.body.Estado,req.body.Descricao]
-    con.exeqSQLQuery("insert into elementoquimico(nome,simbolo,numero,estado,descricao) values (?,?,?,?,?);", params, res,false);
+    params = [req.body.Nome, req.body.Simbolo, req.body.Numero, req.body.Estado, req.body.Descricao]
+    con.exeqSQLQuery("insert into elementoquimico(nome,simbolo,numero,estado,descricao) values (?,?,?,?,?);", params, res, false);
   }
 })
 
-app.post('/cadcompostows', (req, res) => {
+app.post('/cadformulaws', (req, res) => {
   if (req.body.Id > 0) {
     params = [req.body.Idelemento, req.body.Quantidade, req.body.IdComposto, req.body.Id]
     console.log(params)
-    con.exeqSQLQuery("update formulaquimica set idelemento = ?, quantidade = ?,idcomposto= ? where id = ?", params, res,false);
+    con.exeqSQLQuery("update formulaquimica set idelemento = ?, quantidade = ?,idcomposto= ? where id = ?", params, res, false);
   } else {
     params = [req.body.Idelemento, req.body.Quantidade, req.body.IdComposto]
-    con.exeqSQLQuery("insert into formulaquimica(idelemento,quantidade,idcomposto) values(?,?,?);", params, res,false);
+    con.exeqSQLQuery("insert into formulaquimica(idelemento,quantidade,idcomposto) values(?,?,?);", params, res, false);
   }
 })
 
@@ -67,7 +67,12 @@ app.post('/cadcompostows', (req, res) => {
 
 app.get('/delelementows/:Id', (req, res) => {
   console.log(req.params.Id)
-  con.exeqSQLQuery("delete from elementoquimico where id = ?", req.params.Id, res,false)
+  con.exeqSQLQuery("delete from elementoquimico where id = ?", req.params.Id, res, false)
+})
+
+
+app.get('/delformulaws/:Id', (req, res) => {
+  con.exeqSQLQuery("delete from formulaquimica where id = ?", req.params.Id, res, false)
 })
 
 
