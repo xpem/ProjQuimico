@@ -35,9 +35,9 @@ app.get('/formulaws/:Id', (req, res) => {
 
 app.get('/compostows/:Id', (req, res) => {
   if (req.params.Id == 0) {
-    con.exeqSQLQuery("select id,nome from compostoquimico", null, res, true)
+    con.exeqSQLQuery("select id,nome,aparencia from compostoquimico", null, res, true)
   } else {
-    con.exeqSQLQuery("select id,nome from compostoquimico where id = ?", req.params.Id, res, true)
+    con.exeqSQLQuery("select id,nome,aparencia from compostoquimico where id = ?", req.params.Id, res, true)
   }
 })
 
@@ -52,18 +52,27 @@ app.post('/cadelementows', (req, res) => {
   }
 })
 
+app.post('/cadcompostows', (req, res) => {
+  if (req.body.Id > 0) {
+    params = [req.body.Composto, req.body.Aparencia, req.body.Id]
+    console.log(params)
+    con.exeqSQLQuery("update compostoquimico set nome = ?,aparencia = ? where id = ?", params, res, false);
+  } else {
+    params = [req.body.Composto, req.body.Aparencia]
+    con.exeqSQLQuery("insert into compostoquimico(nome,aparencia) values(?,?);", params, res, false);
+  }
+})
+
 app.post('/cadformulaws', (req, res) => {
   if (req.body.Id > 0) {
     params = [req.body.Idelemento, req.body.Quantidade, req.body.IdComposto, req.body.Id]
     console.log(params)
-    con.exeqSQLQuery("update formulaquimica set idelemento = ?, quantidade = ?,idcomposto= ? where id = ?", params, res, false);
+    con.exeqSQLQuery("update formulaquimica set idelemento = ?, quantidade = ?,idcomposto= ? where id = ?;", params, res, false);
   } else {
     params = [req.body.Idelemento, req.body.Quantidade, req.body.IdComposto]
-    con.exeqSQLQuery("insert into formulaquimica(idelemento,quantidade,idcomposto) values(?,?,?);", params, res, false);
+    con.exeqSQLQuery("insert into formulaquimica(idelemento,quantidade,idcomposto) values(?,?,?); ", params, res, false);
   }
 })
-
-
 
 app.get('/delelementows/:Id', (req, res) => {
   console.log(req.params.Id)

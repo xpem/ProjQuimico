@@ -15,7 +15,8 @@ let exeqSQLQuery = function exeqSQLQuery(sqlQry, params, res, consulta) {
         res.json(results);
       }
       else {
-        res.json("OK");
+        console.log(results.insertId)
+        res.json(results.insertId);
       }
     }
     // connection.end();
