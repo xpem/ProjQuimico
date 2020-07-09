@@ -1,8 +1,19 @@
+nuget: debuger for chrone 
+
+
+atençã ao package, ele tem que estar configurado.
+
+comandos cmd:
+
+cd source\repos\ProjQuimico
+
+
 mkdir ProjQuimico
 cd ProjQuimico
 code .
 npm init
 npm install express --save
+npm install sqlite3 --save
 
 <opcional>
 npm install nodemon --save-dev

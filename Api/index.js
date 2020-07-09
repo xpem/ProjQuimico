@@ -1,14 +1,16 @@
 const express = require('express');
 const app = express();
-
 const port = 5000; //porta padrão
-const mysql = require('mysql');
-var con = require('../Acesso/conexao');
+
+
+var con = require('../AL/conexao');
+var belemento = require('../BL/BElementos');
 
 //configurando o body parser para pegar POSTS mais tarde
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
 var cors = require('cors');
 app.use(cors());
 
@@ -16,13 +18,14 @@ app.listen(port, function () {
   console.log('server running')
 });
 
-app.get('/elementosws/:Id', (req, res) => {
-  if (req.params.Id == 0) {
-    con.consulta("select id,nome,simbolo,numero,estado,descricao from elementoquimico order by numero", null, res);
-  }
-  else {
-    con.consulta("select id,nome,simbolo,numero,estado,descricao from elementoquimico where id = ? order by numero", req.params.Id, res);
-  }
+app.get('/elementosws/:Id', (req, res) => {  
+ belemento.consulta_elemento(req,res);
+  // if (req.params.Id == 0) {
+  //   con.consulta("select id,nome,simbolo,numero,estado,descricao from elementoquimico order by numero", [], res);
+  // }
+  // else {
+  //   con.consulta("select id,nome,simbolo,numero,estado,descricao from elementoquimico where id = ? order by numero", req.params.Id, res);
+  // }
 })
 
 app.get('/formulaws/:Id', (req, res) => {
@@ -52,7 +55,7 @@ app.post('/cadelementows', (req, res) => {
       });
   } else {
     
-      (con.comando("insert into elementoquimico(nome,simbolo,numero,estado,descricao) values (?,?,?,?,?);", 
+      (con.insercao("insert into elementoquimico(nome,simbolo,numero,estado,descricao) values (?,?,?,?,?);", 
       [req.body.Nome, req.body.Simbolo, req.body.Numero, req.body.Estado, req.body.Descricao])).then(function (result) {
         ConstroiResposta(res, result)
       });
@@ -67,7 +70,7 @@ app.post('/cadcompostows', (req, res) => {
         console.log(result)
       });
   } else {
-    (con.comando("insert into compostoquimico(nome,aparencia) values(?,?);", [req.body.Composto, req.body.Aparencia])).then(function (result) {
+    (con.insercao("insert into compostoquimico(nome,aparencia) values(?,?);", [req.body.Composto, req.body.Aparencia])).then(function (result) {
       ConstroiResposta(res, result)
     });
   }
@@ -79,7 +82,7 @@ app.post('/cadformulaws', (req, res) => {
         ConstroiResposta(res, result)
       });
   } else {
-      (con.comando("insert into formulaquimica(idelemento,quantidade,idcomposto) values(?,?,?);", [req.body.Idelemento, req.body.Quantidade, req.body.IdComposto])).then(function (result) {
+      (con.insercao("insert into formulaquimica(idelemento,quantidade,idcomposto) values(?,?,?);", [req.body.Idelemento, req.body.Quantidade, req.body.IdComposto])).then(function (result) {
         ConstroiResposta(res, result)
       });
   }
