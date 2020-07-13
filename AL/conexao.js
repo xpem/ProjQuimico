@@ -1,7 +1,7 @@
 const sqlite3 = require('sqlite3');
 var db = new sqlite3.Database('./dbchemical.sqlite3');
 
-let consulta = function consulta(sqlQry, params, res) {
+exports.consulta  = function (sqlQry, params, res) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   res.setHeader('Content-Type', 'application/json');
@@ -15,9 +15,9 @@ let consulta = function consulta(sqlQry, params, res) {
   });
 }
 
-let comando = async function (sqlQry, params) {
-  return new Promise((resolve, reject) => {
-    db.run(sqlQry, params, function (error, results, fields) {
+exports.comando = async function (sqlQry, params) {
+  return new Promise((resolve) => {
+    db.run(sqlQry, params, function (error) {
       if (error) {
         console.log(error);
         if (error.code == "ER_DUP_ENTRY") {
@@ -27,15 +27,15 @@ let comando = async function (sqlQry, params) {
           resolve([1, "Erro ao tentar executar a tarefa."]);
       }
       else {
-        resolve(["1"]);
+        resolve([0, "1"]);
       }
     })
   })
 }
 
-let insercao = async function (sqlQry, params) {
-  return new Promise((resolve, reject) => {
-    db.run(sqlQry, params, function (error, results, fields) {
+exports.insercao = async function (sqlQry, params) {
+  return new Promise((resolve) => {
+    db.run(sqlQry, params, function (error) {
       if (error) {
         console.log(error);
         if (error.code == "ER_DUP_ENTRY") {
@@ -47,14 +47,8 @@ let insercao = async function (sqlQry, params) {
       else {        
         // seleciona o id inserido.
    console.log(this.lastID)
-   resolve(this.lastID);
+   resolve([this.lastID]);
       }
     })
   })
 }
-
-
-exports.consulta = consulta;
-exports.comando = comando;
-exports.insercao = insercao;
-

@@ -3,6 +3,7 @@ nuget: debuger for chrone
 
 atençã ao package, ele tem que estar configurado.
 
+
 comandos cmd:
 
 cd source\repos\ProjQuimico
