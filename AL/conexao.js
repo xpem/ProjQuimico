@@ -1,18 +1,16 @@
 const sqlite3 = require('sqlite3');
 var db = new sqlite3.Database('./dbchemical.sqlite3');
 
-exports.consulta  = function (sqlQry, params, res) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  res.setHeader('Content-Type', 'application/json');
+exports.consulta  = function (sqlQry, params) {
+  return new Promise((resolve) => {
   db.all(sqlQry, params, function (error, results) {
     if (error)
       console.log(error);
     else {
-      console.log(results)
-      res.json(results);
+      resolve(results)
     }
-  });
+  })
+})
 }
 
 exports.comando = async function (sqlQry, params) {

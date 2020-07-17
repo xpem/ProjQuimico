@@ -2,61 +2,111 @@ var con = require('../AL/conexao');
 var trabvar = require('./TrabalhaEntradasSaidas')
 
 exports.cad_composto = function (req, res) {
-    if (req.body.Id > 0) {
-        (con.comando("update compostoquimico set nome = ?,aparencia = ? where id = ?", [req.body.Composto, req.body.Aparencia, req.body.Id])).then(function (result) {
-            trabvar.ConstroiResposta(res, result)
-        });
-    } else {
-        (con.insercao("insert into compostoquimico(nome,aparencia) values(?,?);", [req.body.Composto, req.body.Aparencia])).then(function (result) {
-            trabvar.ConstroiResposta(res, result)
-        });
-    }
-}
-exports.consulta_composto = function (req, res) {
-    querie = "select id,nome,aparencia from compostoquimico"
-    console.log(req.params.Id)     
-    if (req.params.Id == 0) {
-          
-        con.consulta(querie, [], res);
-    } else {
-        con.consulta(querie + " where id = ?", req.params.Id, res);
-    }
-}
 
-exports.del_composto = function(req, res) {      
-    (con.comando("delete from formulaquimica where idcomposto = ?", req.params.Id)).then(function (result) {
-      if (result => 0) {
-        (con.comando("delete from compostoquimico where id = ?", req.params.Id)).then(function (result) {
-            trabvar.ConstroiResposta(res, result)
+  if (req.body.Id > 0) {
+    (con.comando("update compostoquimico set nome = ?,aparencia = ? where id = ?", [req.body.Composto, req.body.Aparencia, req.body.Id])).then(function (result) {
+      trabvar.ConstroiResposta(res, result)
+    });
+  } else {
+    //verificar duplicidade
+    con.consulta("select id from compostoquimico where nome = ?", req.body.Composto).then(function (result) {
+
+      if (result[0] == undefined) {
+        (con.insercao("insert into compostoquimico(nome,aparencia) values(?,?);", [req.body.Composto, req.body.Aparencia])).then(function (result) {
+          trabvar.ConstroiResposta(res, result)
         });
       }
-    });
+      else {
+        console.log(result);
+        var retorno = [0, "Erro: Composto já cadastrados!"];
+        trabvar.ConstroiResposta(res, retorno)
+      }
+    })
+  }
+}
+
+exports.consulta_composto = async function (req, res) {
+  querie = "select id,nome,aparencia from compostoquimico"
+  querieformula = "select eq.nome,eq.simbolo,fq.quantidade,fq.id,fq.idelemento from formulaquimica fq inner join elementoquimico eq on fq.idelemento = eq.id where fq.idcomposto = ?";
+
+  var parametro = [];
+  if (req.params.Id != 0) {
+    querie += " where id = ?"
+    parametro = req.params.Id
   }
 
-
-  exports.consulta_formula = function(req, res)  {
-    querie = "select eq.nome,eq.simbolo,fq.quantidade,fq.id,fq.idelemento from formulaquimica fq inner join elementoquimico eq on fq.idelemento = eq.id";
-    if (req.params.Id == 0) {
-      con.consulta(querie, null, res)
-    } else {
-      con.consulta(querie + " where fq.idcomposto = ?", req.params.Id, res)
+  (con.consulta(querie, parametro)).then(async function (result) {
+    //construção da fórmula, para cada composto
+    for (let i = 0; i < Object.keys(result).length; i++) {
+      result[i].formula = "";
+      await (con.consulta(querieformula, result[i].id)).then(function (result2) {
+        for (let j = 0; j < Object.keys(result2).length; j++) {
+          result[i].formula += result2[j].simbolo;
+          if (result2[j].quantidade > 1) {
+            result[i].formula += result2[j].quantidade;
+          }
+          console.log(result[i].formula)
+        }
+      })
     }
-  }
-
- exports.cad_formulas = function (req, res){
-    if (req.body.Id > 0) {
-      (con.comando("update formulaquimica set idelemento = ?, quantidade = ?,idcomposto= ? where id = ?;", [req.body.Idelemento, req.body.Quantidade, req.body.IdComposto, req.body.Id])).then(function (result) {
-        trabvar.ConstroiResposta(res, result)
-      });
-    } else {
-      (con.insercao("insert into formulaquimica(idelemento,quantidade,idcomposto) values(?,?,?);", [req.body.Idelemento, req.body.Quantidade, req.body.IdComposto])).then(function (result) {
-        trabvar.ConstroiResposta(res, result)
-      });
-    }
-  }
-  
-  exports.del_formulas = function(req, res){
-    (con.comando("delete from formulaquimica where id = ?", req.params.Id)).then(function (result) {
+    console.log(result)
     trabvar.ConstroiResposta(res, result)
+  })
+}
+
+exports.del_composto = function (req, res) {
+  (con.comando("delete from formulaquimica where idcomposto = ?", req.params.Id)).then(function (result) {
+    if (result => 0) {
+      (con.comando("delete from compostoquimico where id = ?", req.params.Id)).then(function (result) {
+        trabvar.ConstroiResposta(res, result)
+      });
+    }
+  });
+}
+
+function consulta_formula(req, res) {
+  querie = "select eq.nome,eq.simbolo,fq.quantidade,fq.id,fq.idelemento from formulaquimica fq inner join elementoquimico eq on fq.idelemento = eq.id";
+  if (req.params.Id == 0) {
+    (con.consulta(querie, [])).then(function (result) {
+      trabvar.ConstroiResposta(res, result)
+    })
+  } else {
+    (con.consulta(querie + " where fq.idcomposto = ?", req.params.Id)
+    ).then(function (result) {
+      trabvar.ConstroiResposta(res, result)
+    })
+  }
+}
+
+exports.consulta_formula = consulta_formula;
+
+exports.cad_formulas = function (req, res) {
+  if (req.body.Id > 0) {
+    //verificar se o id no elemento novo nao é duplicado, caso ele tenha sido mudado.
+    (con.comando("update formulaquimica set idelemento = ?, quantidade = ?,idcomposto= ? where id = ?;", [req.body.Idelemento, req.body.Quantidade, req.body.IdComposto, req.body.Id])).then(function (result) {
+      trabvar.ConstroiResposta(res, result)
+    });
+  } else {
+    (con.insercao("insert into formulaquimica(idelemento,quantidade,idcomposto) values(?,?,?);", [req.body.Idelemento, req.body.Quantidade, req.body.IdComposto])).then(function (result) {
+      trabvar.ConstroiResposta(res, result)
     });
   }
+}
+
+exports.del_formulas = function (req, res) {
+  (con.comando("delete from formulaquimica where id = ?", req.params.Id)).then(function (result) {
+    trabvar.ConstroiResposta(res, result)
+  });
+}
+
+function ConstroiFormula(data) {
+
+  for (let i = 0; i < Object.keys(data).length; i++) {
+    data[i].formula += data[i].simbolo;
+    if (data[i].quantidade > 1) {
+      data[i].formula += data[i].quantidade;
+    }
+  }
+
+  return data;
+}
