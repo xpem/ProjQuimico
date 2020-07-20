@@ -40,6 +40,10 @@ app.get('/compostows/:Id', (req, res) => {
   require('../BL/BCompostos').consulta_composto(req,res);
 })
 
+app.get('/ElementoCompostosWs/:IdElemento', (req, res) => {
+  require('../BL/BCompostos').consulta_composto(req,res);
+})
+
 app.post('/cadcompostows', (req, res) => {
   require('../BL/BCompostos').cad_composto(req,res);
 })

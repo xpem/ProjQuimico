@@ -1,7 +1,11 @@
+Projeto back end do cadastro de composto e elementos quimicos
+ProjQuimico 
+
+
+
 nuget: debuger for chrone 
 
-
-atençã ao package, ele tem que estar configurado.
+atenção ao package, ele tem que estar configurado.
 
 
 comandos cmd:

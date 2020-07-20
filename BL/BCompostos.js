@@ -30,28 +30,36 @@ exports.consulta_composto = async function (req, res) {
   querieformula = "select eq.nome,eq.simbolo,fq.quantidade,fq.id,fq.idelemento from formulaquimica fq inner join elementoquimico eq on fq.idelemento = eq.id where fq.idcomposto = ?";
 
   var parametro = [];
-  if (req.params.Id != 0) {
+  console.log(req.params)
+  if (req.params.Id != undefined && req.params.Id != 0) {
+    
     querie += " where id = ?"
     parametro = req.params.Id
   }
+  else if (req.params.IdElemento != undefined && req.params.IdElemento != 0) {
+    querie += " where id in (SELECT DISTINCT(idcomposto) FROM formulaquimica where idelemento = ?)"
+    parametro = req.params.IdElemento
+    console.log(querie)
+    console.log(parametro)
+  }
 
-  (con.consulta(querie, parametro)).then(async function (result) {
-    //construção da fórmula, para cada composto
-    for (let i = 0; i < Object.keys(result).length; i++) {
-      result[i].formula = "";
-      await (con.consulta(querieformula, result[i].id)).then(function (result2) {
-        for (let j = 0; j < Object.keys(result2).length; j++) {
-          result[i].formula += result2[j].simbolo;
-          if (result2[j].quantidade > 1) {
-            result[i].formula += result2[j].quantidade;
+    (con.consulta(querie, parametro)).then(async function (result) {
+      //construção da fórmula, para cada composto
+      for (let i = 0; i < Object.keys(result).length; i++) {
+        result[i].formula = "";
+        await (con.consulta(querieformula, result[i].id)).then(function (result2) {
+          for (let j = 0; j < Object.keys(result2).length; j++) {
+            result[i].formula += result2[j].simbolo;
+            if (result2[j].quantidade > 1) {
+              result[i].formula += result2[j].quantidade;
+            }
+            console.log(result[i].formula)
           }
-          console.log(result[i].formula)
-        }
-      })
-    }
-    console.log(result)
-    trabvar.ConstroiResposta(res, result)
-  })
+        })
+      }
+      console.log(result)
+      trabvar.ConstroiResposta(res, result)
+    })
 }
 
 exports.del_composto = function (req, res) {
@@ -64,7 +72,7 @@ exports.del_composto = function (req, res) {
   });
 }
 
-function consulta_formula(req, res) {
+exports.consulta_formula  = function(req, res) {
   querie = "select eq.nome,eq.simbolo,fq.quantidade,fq.id,fq.idelemento from formulaquimica fq inner join elementoquimico eq on fq.idelemento = eq.id";
   if (req.params.Id == 0) {
     (con.consulta(querie, [])).then(function (result) {
@@ -77,8 +85,6 @@ function consulta_formula(req, res) {
     })
   }
 }
-
-exports.consulta_formula = consulta_formula;
 
 exports.cad_formulas = function (req, res) {
   if (req.body.Id > 0) {
@@ -97,16 +103,4 @@ exports.del_formulas = function (req, res) {
   (con.comando("delete from formulaquimica where id = ?", req.params.Id)).then(function (result) {
     trabvar.ConstroiResposta(res, result)
   });
-}
-
-function ConstroiFormula(data) {
-
-  for (let i = 0; i < Object.keys(data).length; i++) {
-    data[i].formula += data[i].simbolo;
-    if (data[i].quantidade > 1) {
-      data[i].formula += data[i].quantidade;
-    }
-  }
-
-  return data;
 }
